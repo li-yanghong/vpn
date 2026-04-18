@@ -1,0 +1,37 @@
+set -euo pipefail
+
+need_sudo=""
+if [[ "$(id -u)" -ne 0 ]]; then
+  if command -v sudo >/dev/null 2>&1; then
+    need_sudo="sudo"
+  else
+    echo "Remote user is not root and sudo is missing."
+    exit 1
+  fi
+fi
+
+$need_sudo install -m 0644 /tmp/sing-box-config.json "$REMOTE_CONFIG_PATH"
+$need_sudo rm -f /tmp/sing-box-config.json
+
+if [[ ! -f "/etc/systemd/system/${REMOTE_SERVICE_NAME}.service" && ! -f "/usr/lib/systemd/system/${REMOTE_SERVICE_NAME}.service" ]]; then
+  printf '%s\n' \
+    '[Unit]' \
+    'Description=sing-box service' \
+    'After=network-online.target' \
+    'Wants=network-online.target' \
+    '' \
+    '[Service]' \
+    'Type=simple' \
+    "ExecStart=/usr/local/bin/sing-box run -c ${REMOTE_CONFIG_PATH}" \
+    'Restart=on-failure' \
+    'RestartSec=5s' \
+    'LimitNOFILE=1048576' \
+    '' \
+    '[Install]' \
+    'WantedBy=multi-user.target' | $need_sudo tee "/etc/systemd/system/${REMOTE_SERVICE_NAME}.service" >/dev/null
+fi
+
+$need_sudo systemctl daemon-reload
+$need_sudo systemctl enable --now "$REMOTE_SERVICE_NAME"
+$need_sudo systemctl restart "$REMOTE_SERVICE_NAME"
+$need_sudo systemctl --no-pager --full status "$REMOTE_SERVICE_NAME" | sed -n '1,12p'

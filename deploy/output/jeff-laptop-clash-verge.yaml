@@ -1,0 +1,32 @@
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: true
+unified-delay: true
+
+proxies:
+  - name: jeff-laptop
+    type: vless
+    server: 104.238.151.86
+    port: 443
+    uuid: 7f8b164f-ed3d-4aeb-8a78-edd4d064c714
+    network: tcp
+    udp: true
+    tls: true
+    flow: xtls-rprx-vision
+    servername: www.cloudflare.com
+    client-fingerprint: chrome
+    reality-opts:
+      public-key: a2U8IDXYsBICtbIkqplJnjSA2f34n6qFn-TwCcxCwn4
+      short-id: ba0710da6949a2c9
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - jeff-laptop
+      - DIRECT
+
+rules:
+  - MATCH,PROXY

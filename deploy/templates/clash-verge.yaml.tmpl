@@ -1,0 +1,35 @@
+mixed-port: ${LOCAL_MIXED_PORT}
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: true
+unified-delay: true
+
+proxies:
+  - name: ${CLIENT_NAME}
+    type: vless
+    server: ${SERVER_HOST}
+    port: ${SERVER_PORT}
+    uuid: ${UUID}
+    network: tcp
+    udp: true
+    packet-encoding: xudp
+    encryption: ""
+    tls: true
+    flow: xtls-rprx-vision
+    servername: ${REALITY_SERVER_NAME}
+    client-fingerprint: chrome
+    skip-cert-verify: false
+    reality-opts:
+      public-key: ${REALITY_PUBLIC_KEY}
+      short-id: ${REALITY_SHORT_ID}
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - ${CLIENT_NAME}
+      - DIRECT
+
+rules:
+  - MATCH,PROXY

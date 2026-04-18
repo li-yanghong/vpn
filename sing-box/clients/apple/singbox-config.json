@@ -1,0 +1,173 @@
+{
+  "log": {
+    "level": "info",
+    "timestamp": true
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "tls",
+        "tag": "google",
+        "server": "8.8.8.8",
+        "detour": "My-Xray"
+      },
+      {
+        "type": "udp",
+        "tag": "local",
+        "server": "223.5.5.5"
+      }
+    ],
+    "rules": [
+      {
+        "domain_suffix": [
+          ".cn",
+          "apple.com",
+          "icloud.com",
+          "icloud-content.com",
+          "cdn-apple.com",
+          "mzstatic.com",
+          "ploy.games",
+          "deathnote.cc",
+          "vpsor.cn",
+          "cloudflare.com"
+        ],
+        "server": "local"
+      }
+    ],
+    "strategy": "prefer_ipv4"
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "address": [
+        "172.19.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "mixed"
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "vless",
+      "tag": "My-Xray",
+      "server": "52.10.106.220",
+      "server_port": 443,
+      "uuid": "6f957124-fac4-4293-819f-f0ba0a1c88b0",
+      "tls": {
+        "enabled": true,
+        "server_name": "x.ploy.games"
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/ws",
+        "headers": {
+          "Host": "x.ploy.games"
+        }
+      }
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "action": "sniff"
+      },
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+      {
+        "domain_suffix": [
+          "vpsor.cn",
+          "cloudflare.com",
+          "chandao.imtemas.dev",
+          "apple.com",
+          "icloud.com",
+          "icloud-content.com",
+          "cdn-apple.com",
+          "mzstatic.com",
+          "ploy.games",
+          "deathnote.cc"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "domain": [
+          "sylvan.apple.com"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "ip_cidr": [
+          "103.133.178.10/32"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "geoip-cn",
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "geosite-cn",
+        "outbound": "direct"
+      },
+      {
+        "domain_suffix": [
+          "google.com",
+          "google.com.hk",
+          "googleapis.com",
+          "gstatic.com",
+          "ggpht.com",
+          "googlevideo.com",
+          "googleusercontent.com",
+          "google-analytics.com",
+          "googletagmanager.com",
+          "youtube.com",
+          "ytimg.com",
+          "youtu.be",
+          "openai.com",
+          "anthropic.com",
+          "github.com",
+          "githubusercontent.com",
+          "githubassets.com",
+          "twitter.com",
+          "x.com",
+          "twimg.com",
+          "facebook.com",
+          "fbcdn.net",
+          "instagram.com",
+          "telegram.org",
+          "t.me",
+          "whatsapp.com",
+          "wikipedia.org",
+          "wikimedia.org"
+        ],
+        "outbound": "My-Xray"
+      }
+    ],
+    "rule_set": [
+      {
+        "tag": "geoip-cn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs",
+        "download_detour": "My-Xray"
+      },
+      {
+        "tag": "geosite-cn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs",
+        "download_detour": "My-Xray"
+      }
+    ],
+    "final": "My-Xray",
+    "auto_detect_interface": true
+  }
+}

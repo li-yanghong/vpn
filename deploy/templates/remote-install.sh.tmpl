@@ -1,0 +1,72 @@
+set -euo pipefail
+
+need_sudo=""
+if [[ "$(id -u)" -ne 0 ]]; then
+  if command -v sudo >/dev/null 2>&1; then
+    need_sudo="sudo"
+  else
+    echo "Remote user is not root and sudo is missing."
+    exit 1
+  fi
+fi
+
+if ! command -v sing-box >/dev/null 2>&1; then
+  if [[ "${INSTALL_DEPENDENCIES}" == "true" ]]; then
+    if command -v apt-get >/dev/null 2>&1; then
+      $need_sudo apt-get update
+      $need_sudo apt-get install -y curl wget tar uuid-runtime openssl
+    elif command -v dnf >/dev/null 2>&1; then
+      $need_sudo dnf install -y curl wget tar util-linux openssl
+    elif command -v yum >/dev/null 2>&1; then
+      $need_sudo yum install -y curl wget tar util-linux openssl
+    elif command -v pacman >/dev/null 2>&1; then
+      $need_sudo pacman -Sy --noconfirm curl wget tar util-linux openssl
+    fi
+  fi
+
+  tmpdir="$(mktemp -d)"
+  cleanup() {
+    rm -rf "$tmpdir"
+  }
+  trap cleanup EXIT
+
+  arch="$(uname -m)"
+  case "$arch" in
+    x86_64|amd64) arch="amd64" ;;
+    aarch64|arm64) arch="arm64" ;;
+    *)
+      echo "Unsupported architecture: $arch"
+      exit 1
+      ;;
+  esac
+
+  version="${SING_BOX_VERSION}"
+  if [[ -z "$version" ]]; then
+    version="$(curl -fsSL https://api.github.com/repos/SagerNet/sing-box/releases/latest | sed -n 's/.*"tag_name": "v\([^"]*\)".*/\1/p' | head -n 1)"
+  fi
+
+  if [[ -z "$version" ]]; then
+    echo "Unable to resolve sing-box version."
+    exit 1
+  fi
+
+  url="https://github.com/SagerNet/sing-box/releases/download/v${version}/sing-box-${version}-linux-${arch}.tar.gz"
+  archive="$tmpdir/sing-box.tar.gz"
+  curl -fsSL "$url" -o "$archive"
+  tar -xzf "$archive" -C "$tmpdir"
+  extracted_dir="$(find "$tmpdir" -maxdepth 1 -type d -name "sing-box-*" | head -n 1)"
+  if [[ -z "$extracted_dir" ]]; then
+    echo "Unable to find extracted sing-box directory."
+    exit 1
+  fi
+
+  $need_sudo install -m 0755 "$extracted_dir/sing-box" /usr/local/bin/sing-box
+fi
+
+need_sudo=""
+if [[ "$(id -u)" -ne 0 ]]; then
+  need_sudo="sudo"
+fi
+
+$need_sudo mkdir -p /etc/sing-box
+$need_sudo mkdir -p /var/lib/sing-box

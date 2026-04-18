@@ -1,0 +1,59 @@
+{
+  "log": {
+    "level": "info"
+  },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "127.0.0.1",
+      "listen_port": ${LOCAL_MIXED_PORT}
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "selector",
+      "tag": "select",
+      "outbounds": [
+        "${CLIENT_NAME}",
+        "direct",
+        "block"
+      ],
+      "default": "${CLIENT_NAME}"
+    },
+    {
+      "type": "vless",
+      "tag": "${CLIENT_NAME}",
+      "server": "${SERVER_HOST}",
+      "server_port": ${SERVER_PORT},
+      "uuid": "${UUID}",
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "server_name": "${REALITY_SERVER_NAME}",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "${REALITY_PUBLIC_KEY}",
+          "short_id": "${REALITY_SHORT_ID}"
+        }
+      }
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    }
+  ],
+  "route": {
+    "final": "select",
+    "auto_detect_interface": true
+  }
+}
