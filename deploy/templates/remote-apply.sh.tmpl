@@ -13,6 +13,10 @@ fi
 $need_sudo install -m 0644 /tmp/sing-box-config.json "$REMOTE_CONFIG_PATH"
 $need_sudo rm -f /tmp/sing-box-config.json
 
+if command -v ufw >/dev/null 2>&1; then
+  $need_sudo ufw allow "${SERVER_PORT}/tcp" >/dev/null
+fi
+
 if [[ ! -f "/etc/systemd/system/${REMOTE_SERVICE_NAME}.service" && ! -f "/usr/lib/systemd/system/${REMOTE_SERVICE_NAME}.service" ]]; then
   printf '%s\n' \
     '[Unit]' \

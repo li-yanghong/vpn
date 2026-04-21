@@ -6,6 +6,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${1:-$ROOT_DIR/vless-reality.env}"
 TEMPLATE_FILE="$ROOT_DIR/templates/sing-box-server.json.tmpl"
 SING_BOX_CLIENT_TEMPLATE="$ROOT_DIR/templates/sing-box-client.json.tmpl"
+SING_BOX_MOBILE_TEMPLATE="$ROOT_DIR/templates/sing-box-mobile.json.tmpl"
 CLASH_VERGE_TEMPLATE="$ROOT_DIR/templates/clash-verge.yaml.tmpl"
 REMOTE_INSTALL_TEMPLATE="$ROOT_DIR/templates/remote-install.sh.tmpl"
 REMOTE_APPLY_TEMPLATE="$ROOT_DIR/templates/remote-apply.sh.tmpl"
@@ -23,6 +24,11 @@ fi
 
 if [[ ! -f "$SING_BOX_CLIENT_TEMPLATE" ]]; then
   echo "Missing template file: $SING_BOX_CLIENT_TEMPLATE"
+  exit 1
+fi
+
+if [[ ! -f "$SING_BOX_MOBILE_TEMPLATE" ]]; then
+  echo "Missing template file: $SING_BOX_MOBILE_TEMPLATE"
   exit 1
 fi
 
@@ -69,7 +75,7 @@ CLIENT_NAME="${CLIENT_NAME:-default-client}"
 UUID="${UUID:-}"
 REALITY_SHORT_ID="${REALITY_SHORT_ID:-}"
 SING_BOX_VERSION="${SING_BOX_VERSION:-}"
-LOCAL_MIXED_PORT="${LOCAL_MIXED_PORT:-7890}"
+LOCAL_MIXED_PORT="${LOCAL_MIXED_PORT:-7777}"
 OUTPUT_DIR="${OUTPUT_DIR:-$ROOT_DIR/output}"
 
 if [[ -z "${SSH_KEY_PATH:-}" && -z "${SSH_PASSWORD:-}" ]]; then
@@ -171,7 +177,8 @@ export LOCAL_MIXED_PORT
 
 safe_client_name="$(printf '%s' "$CLIENT_NAME" | tr ' /' '__')"
 mkdir -p "$OUTPUT_DIR"
-local_sing_box_config="$OUTPUT_DIR/${safe_client_name}-sing-box-client.json"
+local_sing_box_desktop_config="$OUTPUT_DIR/${safe_client_name}-sing-box-desktop.json"
+local_sing_box_mobile_config="$OUTPUT_DIR/${safe_client_name}-sing-box-mobile.json"
 local_clash_verge_config="$OUTPUT_DIR/${safe_client_name}-clash-verge.yaml"
 
 tmp_config="$(mktemp)"
@@ -205,10 +212,28 @@ copy_remote "$tmp_config" "$remote_tmp"
 remote_apply_script="$(cat "$REMOTE_APPLY_TEMPLATE")"
 
 echo "==> Applying remote config and restarting service"
-run_remote "REMOTE_CONFIG_PATH='$REMOTE_CONFIG_PATH' REMOTE_SERVICE_NAME='$REMOTE_SERVICE_NAME' bash -s" <<<"$remote_apply_script"
+run_remote "REMOTE_CONFIG_PATH='$REMOTE_CONFIG_PATH' REMOTE_SERVICE_NAME='$REMOTE_SERVICE_NAME' SERVER_PORT='$SERVER_PORT' bash -s" <<<"$remote_apply_script"
 
 echo "==> Generating local client configs"
-python3 - "$SING_BOX_CLIENT_TEMPLATE" "$local_sing_box_config" <<'PY'
+python3 - "$SING_BOX_CLIENT_TEMPLATE" "$local_sing_box_desktop_config" <<'PY'
+import json
+import os
+import sys
+from string import Template
+
+template_path, output_path = sys.argv[1], sys.argv[2]
+with open(template_path, "r", encoding="utf-8") as f:
+    content = f.read()
+
+rendered = Template(content).substitute(os.environ)
+data = json.loads(rendered)
+
+with open(output_path, "w", encoding="utf-8") as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
+    f.write("\n")
+PY
+
+python3 - "$SING_BOX_MOBILE_TEMPLATE" "$local_sing_box_mobile_config" <<'PY'
 import json
 import os
 import sys
@@ -260,6 +285,7 @@ REALITY:
   Short ID: ${REALITY_SHORT_ID}
 
 Local client configs:
-  sing-box: ${local_sing_box_config}
+  sing-box desktop: ${local_sing_box_desktop_config}
+  sing-box mobile: ${local_sing_box_mobile_config}
   Clash Verge: ${local_clash_verge_config}
 EOF

@@ -53,9 +53,11 @@ bash /Users/jeff/Projects/VPN/deploy/deploy-vless-reality.sh /path/to/your.env
 - 在远端生成 REALITY 密钥对
 - 渲染并上传 `/etc/sing-box/config.json`
 - 创建或复用 `systemd` 服务
+- 如果远端启用了 `ufw`，自动放行服务端口的 TCP 入站
 - 启动并重启 `sing-box`
 - 输出客户端所需的 `UUID`、`public_key`、`short_id`
 - 在本地生成 `sing-box` 客户端配置
+- 在本地生成 `sing-box` 手机客户端配置
 - 在本地生成 Clash Verge 可导入配置
 
 ## 说明
@@ -64,5 +66,7 @@ bash /Users/jeff/Projects/VPN/deploy/deploy-vless-reality.sh /path/to/your.env
 - 默认监听 `443`
 - 默认伪装目标是 `www.cloudflare.com:443`
 - 如果你要换伪装域名，只改 `REALITY_SERVER_NAME` 和 `REALITY_SERVER_PORT`
-- 默认本地代理端口是 `7890`
+- 默认本地代理端口是 `7777`
 - 默认输出目录是 `/Users/jeff/Projects/VPN/deploy/output`
+- `sing-box-desktop.json` 适合桌面本地代理模式
+- `sing-box-mobile.json` 适合手机 `sing-box` 的 VPN/TUN 模式

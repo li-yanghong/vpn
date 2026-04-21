@@ -1,6 +1,7 @@
 {
   "log": {
-    "level": "info"
+    "level": "info",
+    "timestamp": true
   },
   "dns": {
     "servers": [
@@ -32,10 +33,15 @@
   },
   "inbounds": [
     {
-      "type": "mixed",
-      "tag": "mixed-in",
-      "listen": "127.0.0.1",
-      "listen_port": ${LOCAL_MIXED_PORT}
+      "type": "tun",
+      "tag": "tun-in",
+      "address": [
+        "172.19.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "auto_route": true,
+      "strict_route": true,
+      "stack": "mixed"
     }
   ],
   "outbounds": [
@@ -73,17 +79,27 @@
   "route": {
     "rules": [
       {
+        "action": "sniff"
+      },
+      {
         "protocol": "dns",
         "action": "hijack-dns"
       },
       {
-        "rule_set": [
-          "geoip-telegram",
-          "geoip-private",
-          "geoip-cn",
-          "geosite-cn"
-        ],
+        "rule_set": "geoip-cn",
         "outbound": "direct"
+      },
+      {
+        "rule_set": "geosite-cn",
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "geoip-private",
+        "outbound": "direct"
+      },
+      {
+        "rule_set": "geoip-telegram",
+        "outbound": "${CLIENT_NAME}"
       },
       {
         "rule_set": [
