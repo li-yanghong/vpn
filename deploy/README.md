@@ -67,6 +67,6 @@ bash /Users/jeff/Projects/VPN/deploy/deploy-vless-reality.sh /path/to/your.env
 - 默认伪装目标是 `www.cloudflare.com:443`
 - 如果你要换伪装域名，只改 `REALITY_SERVER_NAME` 和 `REALITY_SERVER_PORT`
 - 默认本地代理端口是 `7777`
-- 默认输出目录是 `/Users/jeff/Projects/VPN/deploy/output`
+- 默认输出根目录是 `/Users/jeff/Projects/VPN/deploy/output`，实际配置会写入按服务器地址命名的子目录，比如 `output/203.0.113.10/`
 - `sing-box-desktop.json` 适合桌面本地代理模式
 - `sing-box-mobile.json` 适合手机 `sing-box` 的 VPN/TUN 模式

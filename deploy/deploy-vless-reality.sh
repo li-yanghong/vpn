@@ -16,6 +16,7 @@ if [[ ! -f "$ENV_FILE" ]]; then
   echo "Copy $ROOT_DIR/vless-reality.env.example to $ENV_FILE and edit it."
   exit 1
 fi
+ENV_DIR="$(cd "$(dirname "$ENV_FILE")" && pwd)"
 
 if [[ ! -f "$TEMPLATE_FILE" ]]; then
   echo "Missing template file: $TEMPLATE_FILE"
@@ -90,6 +91,9 @@ fi
 
 if [[ -n "${SSH_KEY_PATH:-}" ]]; then
   SSH_KEY_PATH="${SSH_KEY_PATH/#\~/$HOME}"
+  if [[ "$SSH_KEY_PATH" != /* ]]; then
+    SSH_KEY_PATH="$ENV_DIR/$SSH_KEY_PATH"
+  fi
   if [[ ! -f "$SSH_KEY_PATH" ]]; then
     echo "SSH key file not found: $SSH_KEY_PATH"
     exit 1
@@ -176,10 +180,12 @@ export REALITY_SERVER_PORT
 export LOCAL_MIXED_PORT
 
 safe_client_name="$(printf '%s' "$CLIENT_NAME" | tr ' /' '__')"
-mkdir -p "$OUTPUT_DIR"
-local_sing_box_desktop_config="$OUTPUT_DIR/${safe_client_name}-sing-box-desktop.json"
-local_sing_box_mobile_config="$OUTPUT_DIR/${safe_client_name}-sing-box-mobile.json"
-local_clash_verge_config="$OUTPUT_DIR/${safe_client_name}-clash-verge.yaml"
+safe_server_host="$(printf '%s' "$SERVER_HOST" | sed 's/[^A-Za-z0-9._-]/_/g')"
+client_output_dir="$OUTPUT_DIR/$safe_server_host"
+mkdir -p "$client_output_dir"
+local_sing_box_desktop_config="$client_output_dir/${safe_client_name}-sing-box-desktop.json"
+local_sing_box_mobile_config="$client_output_dir/${safe_client_name}-sing-box-mobile.json"
+local_clash_verge_config="$client_output_dir/${safe_client_name}-clash-verge.yaml"
 
 tmp_config="$(mktemp)"
 cleanup_local() {
