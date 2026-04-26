@@ -19,15 +19,6 @@
         "server_port": 53
       }
     ],
-    "rules": [
-      {
-        "rule_set": [
-          "geosite-cn",
-          "geoip-private"
-        ],
-        "server": "local-dns"
-      }
-    ],
     "final": "remote-dns",
     "strategy": "prefer_ipv4"
   },
@@ -70,13 +61,18 @@
     {
       "type": "direct",
       "tag": "direct"
-    },
-    {
-      "type": "block",
-      "tag": "block"
     }
   ],
   "route": {
+    "rule_set": [
+      {
+        "tag": "geoip-cn",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs",
+        "download_detour": "${CLIENT_NAME}"
+      }
+    ],
     "rules": [
       {
         "action": "sniff"
@@ -86,146 +82,13 @@
         "action": "hijack-dns"
       },
       {
-        "rule_set": "geoip-cn",
-        "outbound": "direct"
-      },
-      {
-        "rule_set": "geosite-cn",
-        "outbound": "direct"
-      },
-      {
-        "rule_set": "geoip-private",
-        "outbound": "direct"
-      },
-      {
-        "rule_set": "geoip-telegram",
-        "outbound": "${CLIENT_NAME}"
-      },
-      {
         "rule_set": [
-          "geosite-category-ai-!cn",
-          "geosite-openai",
-          "geosite-google",
-          "geosite-github",
-          "geosite-telegram",
-          "geosite-tiktok",
-          "geosite-twitter",
-          "geosite-netflix",
-          "geosite-youtube",
-          "geosite-proxymedia",
-          "geosite-proxy"
+          "geoip-cn"
         ],
-        "outbound": "${CLIENT_NAME}"
+        "outbound": "direct"
       }
     ],
-    "rule_set": [
-      {
-        "tag": "geoip-telegram",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/telegram.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geoip-private",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/private.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geoip-cn",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/cn.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-cn",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/cn.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-category-ai-!cn",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ai-!cn.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-openai",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/openai.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-google",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/google.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-github",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/github.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-telegram",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/telegram.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-tiktok",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/tiktok.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-twitter",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/twitter.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-netflix",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/netflix.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-youtube",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/youtube.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-proxymedia",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/proxymedia.srs",
-        "download_detour": "${CLIENT_NAME}"
-      },
-      {
-        "tag": "geosite-proxy",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/proxy.srs",
-        "download_detour": "${CLIENT_NAME}"
-      }
-    ],
-    "final": "direct",
+    "final": "${CLIENT_NAME}",
     "auto_detect_interface": true
   }
 }
